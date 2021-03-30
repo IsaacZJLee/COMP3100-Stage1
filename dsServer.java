@@ -1,34 +1,34 @@
 public class Server {
 
 	public int sID;
-	public String sType;
-	public int sLimit;
-	public int sRuntime;
-	public float sRate;
-	public int sCoreCount;
-	public int sMemory;
-	public int sDisk;
+	public String type;
+	public int limit;
+	public int bootupTime;
+	public float hourlyRate;
+	public int coreCount;
+	public int memory;
+	public int disk;
 	public int sState;
 	public int sAvailableTime;
 
-	Server(int sID, String sType, int sLimit, int sRuntime, float sRate, int sCoreCount, int sMemory, int sDisk) {
+	Server(int sID, String type, int limit, int bootupTime, float hourlyRate, int coreCount, int memory, int disk) {
 		this.sID = sID;
-		this.sType = sType;
-		this.sLimit = sLimit;
-		this.sRuntime = sRuntime;
-		this.sRate = sRate;
-		this.sCoreCount = sCoreCount;
-		this.sMemory = sMemory;
-		this.sDisk = sDisk;
+		this.type = type;
+		this.limit = limit;
+		this.bootupTime = bootupTime;
+		this.hourlyRate = hourlyRate;
+		this.coreCount = coreCount;
+		this.memory = memory;
+		this.disk = disk;
 	}
 
-	Server(String sType, int sID, int sState, int sAvailableTime, int sCoreCount, int sMemory, int sDisk) {
-		this.sType = sType;
+	Server(String type, int sID, int sState, int sAvailableTime, int coreCount, int memory, int disk) {
+		this.type = type;
 		this.sID = sID;
 		this.sState = sState;
 		this.sAvailableTime = sAvailableTime;
-		this.sCoreCount = sCoreCount;
-		this.sMemory = sMemory;
-		this.sDisk = sDisk;
+		this.coreCount = coreCount;
+		this.memory = memory;
+		this.disk = disk;
 	}
 }
