@@ -1,4 +1,4 @@
-public class Server {
+public class dsServer {
 
 	public int sID;
 	public String type;
@@ -11,7 +11,7 @@ public class Server {
 	public int sState;
 	public int sAvailableTime;
 
-	Server(int sID, String type, int limit, int bootupTime, float hourlyRate, int coreCount, int memory, int disk) {
+	dsServer(int sID, String type, int limit, int bootupTime, float hourlyRate, int coreCount, int memory, int disk) {
 		this.sID = sID;
 		this.type = type;
 		this.limit = limit;
@@ -22,7 +22,7 @@ public class Server {
 		this.disk = disk;
 	}
 
-	Server(String type, int sID, int sState, int sAvailableTime, int coreCount, int memory, int disk) {
+	dsServer(String type, int sID, int sState, int sAvailableTime, int coreCount, int memory, int disk) {
 		this.type = type;
 		this.sID = sID;
 		this.sState = sState;
