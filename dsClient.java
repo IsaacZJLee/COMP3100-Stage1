@@ -9,7 +9,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 public class dsClient {
-        public static Server[] readXML(Server[] serverArr){
+        public static Server[] readXML(Server[] dsServerArray){
         try {
 			File systemXML = new File("/home/rhynefong/Desktop/ds-sim/src/pre-compiled/ds-system.xml");
 
@@ -19,6 +19,6 @@ public class dsClient {
 
 			doc.getDocumentElement().normalize();
 			NodeList dsServers = doc.getElementsByTagName("server");
-			serverArr = new Server[dsServers.getLength()];
+			dsServerArray = new Server[dsServers.getLength()];
         }
 }
