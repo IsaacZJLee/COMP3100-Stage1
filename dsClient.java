@@ -31,19 +31,19 @@ public class dsClient {
 	public static ArrayList<dsServer> dsServerArray; // stores information from the server
 
 	public static File dsServerXML = new File("ds-system.xml");
-    
-    public static InputStreamReader inputStream;
-    public static DataOutputStream outputStream;
 
-	//Sending message to server
-    public static void send(byte[] message){
-        try {
-            outputStream.write(message);
-            outputStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+	public static InputStreamReader inputStream;
+	public static DataOutputStream outputStream;
+
+	// Sending message to server
+	public static void send(byte[] message) {
+		try {
+			outputStream.write(message);
+			outputStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public static void readDSXML() {
         try {
@@ -77,6 +77,35 @@ public class dsClient {
         }
     }
 
+	public static void runJobs(){
+        try {
+            dsServerArray = new ArrayList<>(); // initialising the new dsServerArray
+
+            //sends HELO to server
+            byteServerMsg = HELO.getBytes();  
+            send(byteServerMsg);
+
+            // expecting Server to reply OK
+
+           // authorizing client
+            byteServerMsg = AUTH_username.getBytes();
+            send(byteServerMsg);
+
+            // expecting Server to reply OK
+
+            readDSXML(); // fetching the list of servers available
+            dsServer largestServerType = allToLargest(dsServerArray); // fetching the largest server from the list
+
+            // Client signals server for a job 
+            byteServerMsg = REDY.getBytes();
+            send(byteServerMsg);
+
+            // server sends JOBN
+
+            inputStream.skip(OK.length() * 2); // ignoring the first two OK commands sent by the server
+            charServerMsg = new char[charSMsgSize]; // intialising charServerMsg of size "charSMsgSize"
+            inputStream.read(charServerMsg); // storing message from the server into charServerMsg
+	
 
 	
 }
