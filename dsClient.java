@@ -105,6 +105,51 @@ public class dsClient {
             inputStream.skip(OK.length() * 2); // ignoring the first two OK commands sent by the server
             charServerMsg = new char[charSMsgSize]; // intialising charServerMsg of size "charSMsgSize"
             inputStream.read(charServerMsg); // storing message from the server into charServerMsg
+
+			while (!jobFinished) {
+                if ((stringServerMsg = String.valueOf(charServerMsg)).contains("NONE")){ //stop the job process when server sends NONE
+                    jobFinished = true;
+                     
+                }
+                else if (stringServerMsg.contains(JOBN) || stringServerMsg.contains(JOBP)) {
+                    fieldServerMsg = stringServerMsg.split(" "); // if job already exists, assign the job into different fields of JOBN
+                   
+                    dsJob ScheduleJob = new dsJob(fieldServerMsg); // initialising new scheduling job
+                    ScheduleJob.printJobDetails();
+
+                    /* SCHEDULE JOB */
+                    String scheduleString = SCHD + " " + ScheduleJob.id + " " + largestServerType.type + " " + largestServerType.sID+"\n";
+                    byteServerMsg = scheduleString.getBytes();
+                    send(byteServerMsg);
+
+                    // Send REDY for the next job
+                    byteServerMsg = REDY.getBytes();
+                    send(byteServerMsg);
+
+                    inputStream.skip(OK.length()); // skip OK to proceed to the next job
+                    charServerMsg = new char[charSMsgSize];
+                    inputStream.read(charServerMsg); // read message from server
+
+                } else if (stringServerMsg.contains(JCPL)) { 
+                    System.out.printf("Job completed for %s%n.", stringServerMsg); //prints the details of the server and job type
+
+                    // Signal REDY message to other jobs waiting 
+                    byteServerMsg = REDY.getBytes();
+                    send(byteServerMsg);
+
+                    // reset charServerMsg to read the next job
+                    charServerMsg = new char[charSMsgSize];
+                    inputStream.read(charServerMsg); // read message from server
+                }
+            }
+        } catch (EOFException e) {
+            System.out.println("EOF(End of File) Exception: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IO Exception: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
+        } 
+    }
 	
 
 	
