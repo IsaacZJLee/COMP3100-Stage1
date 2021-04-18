@@ -26,8 +26,7 @@ public class dsClient {
 
 	public static String stringServerMsg; // contains the current server message in the form of String
 	public static byte[] byteServerMsg; // contains current server message in the form of bytes
-	public static String[] fieldServerMsg; // contains current server message in the form of the individual Strings in
-											// the array
+	public static String[] fieldServerMsg; // contains current server message in the form of the individual Strings in the array
 	public static ArrayList<dsServer> dsServerArray; // stores information from the server
 
 	public static File dsServerXML = new File("ds-system.xml");
@@ -55,8 +54,7 @@ public class dsClient {
 			doc.getDocumentElement().normalize();
 			NodeList servers = doc.getElementsByTagName("server");
 
-			for (int i = 0; i < servers.getLength(); i++) { // reading xml file and passing data into the correct
-															// variables
+			for (int i = 0; i < servers.getLength(); i++) { // reading xml file and passing data into the correct variables
 				Element server = (Element) servers.item(i);
 				for (int j = 0; j < Integer.parseInt(server.getAttribute("limit")); j++) {
 					String type = server.getAttribute("type");
@@ -116,8 +114,7 @@ public class dsClient {
 					jobFinished = true;
 
 				} else if (stringServerMsg.contains(JOBN) || stringServerMsg.contains(JOBP)) {
-					fieldServerMsg = stringServerMsg.split(" "); // if job already exists, assign the job into different
-																	// fields of JOBN
+					fieldServerMsg = stringServerMsg.split(" "); // if job already exists, assign the job into different fields of JOBN
 
 					dsJob ScheduleJob = new dsJob(fieldServerMsg); // initialising new scheduling job
 					ScheduleJob.printJobDetails();
@@ -137,8 +134,7 @@ public class dsClient {
 					inputStream.read(charServerMsg); // read message from server
 
 				} else if (stringServerMsg.contains(JCPL)) {
-					System.out.printf("Job completed for %s%n.", stringServerMsg); // prints the details of the server
-																					// and job type
+					System.out.printf("Job completed for %s%n.", stringServerMsg); // prints the details of the server and job type
 
 					// Signal REDY message to other jobs waiting
 					byteServerMsg = REDY.getBytes();
