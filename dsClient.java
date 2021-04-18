@@ -65,7 +65,7 @@ public class dsClient {
                     int memory = Integer.parseInt(server.getAttribute("memory"));
                     int disk = Integer.parseInt(server.getAttribute("disk"));
 
-                    /create server object to store all properties from the xml file/
+                    //create server object to store all properties from the xml file/
 
                     dsServer server_obj = new dsServer(j, type, limit, bootupTime, hourlyRate, coreCount, memory, disk); 
                     dsServerArray.add(server_obj); // add server object to dsServerArray
