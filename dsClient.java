@@ -35,6 +35,15 @@ public class dsClient {
     public static InputStreamReader inputStream;
     public static DataOutputStream outputStream;
 
-	
+	//Sending message to server
+    public static void send(byte[] message){
+        try {
+            outputStream.write(message);
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 	
 }
