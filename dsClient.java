@@ -46,152 +46,146 @@ public class dsClient {
 	}
 
 	public static void readDSXML() {
-        try {
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(dsServerXML);
+		try {
 
-            doc.getDocumentElement().normalize();
-            NodeList servers = doc.getElementsByTagName("server");
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(dsServerXML);
 
-            for (int i = 0; i < servers.getLength(); i++) { // reading xml file and passing data into the correct variables
-                Element server = (Element) servers.item(i);
-                for (int j = 0; j < Integer.parseInt(server.getAttribute("limit")); j++) {
-                    String type = server.getAttribute("type");
-                    int limit = Integer.parseInt(server.getAttribute("limit"));
-                    int bootupTime = Integer.parseInt(server.getAttribute("bootupTime"));
-                    float hourlyRate = Float.parseFloat(server.getAttribute("hourlyRate"));
-                    int coreCount = Integer.parseInt(server.getAttribute("coreCount"));
-                    int memory = Integer.parseInt(server.getAttribute("memory"));
-                    int disk = Integer.parseInt(server.getAttribute("disk"));
+			doc.getDocumentElement().normalize();
+			NodeList servers = doc.getElementsByTagName("server");
 
-                    //create server object to store all properties from the xml file/
+			for (int i = 0; i < servers.getLength(); i++) { // reading xml file and passing data into the correct
+															// variables
+				Element server = (Element) servers.item(i);
+				for (int j = 0; j < Integer.parseInt(server.getAttribute("limit")); j++) {
+					String type = server.getAttribute("type");
+					int limit = Integer.parseInt(server.getAttribute("limit"));
+					int bootupTime = Integer.parseInt(server.getAttribute("bootupTime"));
+					float hourlyRate = Float.parseFloat(server.getAttribute("hourlyRate"));
+					int coreCount = Integer.parseInt(server.getAttribute("coreCount"));
+					int memory = Integer.parseInt(server.getAttribute("memory"));
+					int disk = Integer.parseInt(server.getAttribute("disk"));
 
-                    dsServer server_obj = new dsServer(j, type, limit, bootupTime, hourlyRate, coreCount, memory, disk); 
-                    dsServerArray.add(server_obj); // add server object to dsServerArray
-                }
-            }
+					// create server object to store all properties from the xml file/
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+					dsServer server_obj = new dsServer(j, type, limit, bootupTime, hourlyRate, coreCount, memory, disk);
+					dsServerArray.add(server_obj); // add server object to dsServerArray
+				}
+			}
 
-	public static void runJobs(){
-        try {
-            dsServerArray = new ArrayList<>(); // initialising the new dsServerArray
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-            //sends HELO to server
-            byteServerMsg = HELO.getBytes();  
-            send(byteServerMsg);
+	public static void runJobs() {
+		try {
+			dsServerArray = new ArrayList<>(); // initialising the new dsServerArray
 
-            // expecting Server to reply OK
+			// sends HELO to server
+			byteServerMsg = HELO.getBytes();
+			send(byteServerMsg);
 
-           // authorizing client
-            byteServerMsg = AUTH_username.getBytes();
-            send(byteServerMsg);
+			// expecting Server to reply OK
 
-            // expecting Server to reply OK
+			// authorizing client
+			byteServerMsg = AUTH_username.getBytes();
+			send(byteServerMsg);
 
-            readDSXML(); // fetching the list of servers available
-            dsServer largestServerType = allToLargest(dsServerArray); // fetching the largest server from the list
+			// expecting Server to reply OK
 
-            // Client signals server for a job 
-            byteServerMsg = REDY.getBytes();
-            send(byteServerMsg);
+			readDSXML(); // fetching the list of servers available
+			dsServer largestServerType = allToLargest(dsServerArray); // fetching the largest server from the list
 
-            // server sends JOBN
+			// Client signals server for a job
+			byteServerMsg = REDY.getBytes();
+			send(byteServerMsg);
 
-            inputStream.skip(OK.length() * 2); // ignoring the first two OK commands sent by the server
-            charServerMsg = new char[charSMsgSize]; // intialising charServerMsg of size "charSMsgSize"
-            inputStream.read(charServerMsg); // storing message from the server into charServerMsg
+			// server sends JOBN
 
-	Boolean jobFinished = false;
-	while (!jobFinished) {
-                if ((stringServerMsg = String.valueOf(charServerMsg)).contains("NONE")){ //stop the job process when server sends NONE
-                    jobFinished = true;
-                     
-                }
-                else if (stringServerMsg.contains(JOBN) || stringServerMsg.contains(JOBP)) {
-                    fieldServerMsg = stringServerMsg.split(" "); // if job already exists, assign the job into different fields of JOBN
-                   
-                    dsJob ScheduleJob = new dsJob(fieldServerMsg); // initialising new scheduling job
-                    ScheduleJob.printJobDetails();
+			inputStream.skip(OK.length() * 2); // ignoring the first two OK commands sent by the server
+			charServerMsg = new char[charSMsgSize]; // intialising charServerMsg of size "charSMsgSize"
+			inputStream.read(charServerMsg); // storing message from the server into charServerMsg
 
-                    /* SCHEDULE JOB */
-                    String scheduleString = SCHD + " " + ScheduleJob.id + " " + largestServerType.type + " " + largestServerType.sID+"\n";
-                    byteServerMsg = scheduleString.getBytes();
-                    send(byteServerMsg);
+			Boolean jobFinished = false;
 
-                    // Send REDY for the next job
-                    byteServerMsg = REDY.getBytes();
-                    send(byteServerMsg);
+			while (!jobFinished) {
+				if ((stringServerMsg = String.valueOf(charServerMsg)).contains("NONE")) { // stop the job process when
+																							// server sends NONE
+					jobFinished = true;
 
-                    inputStream.skip(OK.length()); // skip OK to proceed to the next job
-                    charServerMsg = new char[charSMsgSize];
-                    inputStream.read(charServerMsg); // read message from server
+				} else if (stringServerMsg.contains(JOBN) || stringServerMsg.contains(JOBP)) {
+					fieldServerMsg = stringServerMsg.split(" "); // if job already exists, assign the job into different
+																	// fields of JOBN
 
-                } else if (stringServerMsg.contains(JCPL)) { 
-                    System.out.printf("Job completed for %s%n.", stringServerMsg); //prints the details of the server and job type
+					dsJob ScheduleJob = new dsJob(fieldServerMsg); // initialising new scheduling job
+					ScheduleJob.printJobDetails();
 
-                    // Signal REDY message to other jobs waiting 
-                    byteServerMsg = REDY.getBytes();
-                    send(byteServerMsg);
+					/* SCHEDULE JOB */
+					String scheduleString = SCHD + " " + ScheduleJob.id + " " + largestServerType.type + " "
+							+ largestServerType.sID + "\n";
+					byteServerMsg = scheduleString.getBytes();
+					send(byteServerMsg);
 
-                    // reset charServerMsg to read the next job
-                    charServerMsg = new char[charSMsgSize];
-                    inputStream.read(charServerMsg); // read message from server
-                }
-            }
-        } catch (EOFException e) {
-            System.out.println("EOF(End of File) Exception: " + e.getMessage());
-        } catch (IOException e) {
-            System.out.println("IO Exception: " + e.getMessage());
-        } catch (Exception e) {
-            System.out.println("Exception: " + e.getMessage());
-        } 
-    }
-	//this function identifies the largest server based by Core
-    public static dsServer allToLargest(ArrayList<dsServer> s) { 
-        dsServer largestServerType = s.get(0);
+					// Send REDY for the next job
+					byteServerMsg = REDY.getBytes();
+					send(byteServerMsg);
 
-        for (int i = 1; i < s.size(); i++) {
-            if (s.get(i).coreCount >= largestServerType.coreCount) {
-                largestServerType = s.get(i);
-            }
-        }
-        return largestServerType;
-    }
+					inputStream.skip(OK.length()); // skip OK to proceed to the next job
+					charServerMsg = new char[charSMsgSize];
+					inputStream.read(charServerMsg); // read message from server
 
-    public static void main(String[] args) throws IOException {
-        Socket s = new Socket(host_name, server_Port); // creating a new socket connection to server 
-        inputStream = new InputStreamReader(s.getInputStream());
-        outputStream = new DataOutputStream(s.getOutputStream());
-        
-        runJobs();
-        
-        System.out.println("CLOSING CONNECTION...");
-        
-        byteServerMsg = QUIT.getBytes();
-        send(byteServerMsg);
-        
-        System.out.println("CONNECTION CLOSED.");
+				} else if (stringServerMsg.contains(JCPL)) {
+					System.out.printf("Job completed for %s%n.", stringServerMsg); // prints the details of the server
+																					// and job type
 
-        outputStream.close();
-        s.close();
-    }
-	
-	    //this function identifies the largest server based by Core
-    public static dsServer allToLargest(ArrayList<dsServer> s) { 
-        dsServer largestServerType = s.get(0);
+					// Signal REDY message to other jobs waiting
+					byteServerMsg = REDY.getBytes();
+					send(byteServerMsg);
 
-        for (int i = 1; i < s.size(); i++) {
-            if (s.get(i).coreCount >= largestServerType.coreCount) {
-                largestServerType = s.get(i);
-            }
-        }
-        return largestServerType;
-    }
+					// reset charServerMsg to read the next job
+					charServerMsg = new char[charSMsgSize];
+					inputStream.read(charServerMsg); // read message from server
+				}
+			}
+		} catch (EOFException e) {
+			System.out.println("EOF(End of File) Exception: " + e.getMessage());
+		} catch (IOException e) {
+			System.out.println("IO Exception: " + e.getMessage());
+		} catch (Exception e) {
+			System.out.println("Exception: " + e.getMessage());
+		}
+	}
 
-	
+	// this function identifies the largest server based by Core
+	public static dsServer allToLargest(ArrayList<dsServer> s) {
+		dsServer largestServerType = s.get(0);
+
+		for (int i = 1; i < s.size(); i++) {
+			if (s.get(i).coreCount >= largestServerType.coreCount) {
+				largestServerType = s.get(i);
+			}
+		}
+		return largestServerType;
+	}
+
+	public static void main(String[] args) throws IOException {
+		Socket s = new Socket(host_name, server_Port); // creating a new socket connection to server
+		inputStream = new InputStreamReader(s.getInputStream());
+		outputStream = new DataOutputStream(s.getOutputStream());
+
+		runJobs();
+
+		System.out.println("CLOSING CONNECTION...");
+
+		byteServerMsg = QUIT.getBytes();
+		send(byteServerMsg);
+
+		System.out.println("CONNECTION CLOSED.");
+
+		outputStream.close();
+		s.close();
+	}
+
 }
