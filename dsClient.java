@@ -106,7 +106,8 @@ public class dsClient {
             charServerMsg = new char[charSMsgSize]; // intialising charServerMsg of size "charSMsgSize"
             inputStream.read(charServerMsg); // storing message from the server into charServerMsg
 
-			while (!jobFinished) {
+	Boolean jobFinished = false;
+	while (!jobFinished) {
                 if ((stringServerMsg = String.valueOf(charServerMsg)).contains("NONE")){ //stop the job process when server sends NONE
                     jobFinished = true;
                      
@@ -150,7 +151,47 @@ public class dsClient {
             System.out.println("Exception: " + e.getMessage());
         } 
     }
+	//this function identifies the largest server based by Core
+    public static dsServer allToLargest(ArrayList<dsServer> s) { 
+        dsServer largestServerType = s.get(0);
+
+        for (int i = 1; i < s.size(); i++) {
+            if (s.get(i).coreCount >= largestServerType.coreCount) {
+                largestServerType = s.get(i);
+            }
+        }
+        return largestServerType;
+    }
+
+    public static void main(String[] args) throws IOException {
+        Socket s = new Socket(host_name, server_Port); // creating a new socket connection to server 
+        inputStream = new InputStreamReader(s.getInputStream());
+        outputStream = new DataOutputStream(s.getOutputStream());
+        
+        runJobs();
+        
+        System.out.println("CLOSING CONNECTION...");
+        
+        byteServerMsg = QUIT.getBytes();
+        send(byteServerMsg);
+        
+        System.out.println("CONNECTION CLOSED.");
+
+        outputStream.close();
+        s.close();
+    }
 	
+	    //this function identifies the largest server based by Core
+    public static dsServer allToLargest(ArrayList<dsServer> s) { 
+        dsServer largestServerType = s.get(0);
+
+        for (int i = 1; i < s.size(); i++) {
+            if (s.get(i).coreCount >= largestServerType.coreCount) {
+                largestServerType = s.get(i);
+            }
+        }
+        return largestServerType;
+    }
 
 	
 }
